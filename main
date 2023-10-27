@@ -1,0 +1,87 @@
+import psycopg2
+
+# Подключение к удаленной СУБД PostgreSQL
+conn = psycopg2.connect(
+    host="your_host",
+    database="your_database",
+    user="your_username",
+    password="your_password"
+)
+
+# Создание курсора для выполнения SQL-запросов
+cur = conn.cursor()
+
+# Основная логика программы
+def main():
+    while True:
+        print("1. Добавить новый тур")
+        print("2. Удалить тур")
+        print("3. Вывести список туров")
+        print("4. Выход")
+        choice = input("Выберите действие: ")
+
+        if choice == "1":
+            add_tour()
+        elif choice == "2":
+            delete_tour()
+        elif choice == "3":
+            show_tours()
+        elif choice == "4":
+            break
+        else:
+            print("Выбрано неверное действие. Попробуйте еще раз.")
+
+# Функция для добавления нового тура
+def add_tour():
+    name = input("Введите название тура: ")
+    destination = input("Введите место назначения: ")
+    duration = int(input("Введите продолжительность тура (в днях): "))
+    price = float(input("Введите стоимость тура: "))
+
+    sql = "INSERT INTO tours (name, destination, duration, price) VALUES (%s, %s, %s, %s)"
+    values = (name, destination, duration, price)
+
+    # Выполнение SQL-запроса
+    cur.execute(sql, values)
+    conn.commit()
+
+    print("Тур успешно добавлен!")
+    print()
+
+# Функция для удаления тура
+def delete_tour():
+    id = int(input("Введите ID тура для удаления: "))
+
+    sql = "DELETE FROM tours WHERE id = %s"
+    values = (id,)
+
+    # Выполнение SQL-запроса
+    cur.execute(sql, values)
+    conn.commit()
+
+    print("Тур успешно удален!")
+    print()
+
+# Функция для вывода списка туров
+def show_tours():
+    sql = "SELECT * FROM tours"
+
+    # Выполнение SQL-запроса
+    cur.execute(sql)
+    tours = cur.fetchall()
+
+    if len(tours) == 0:
+        print("Нет доступных туров.")
+    else:
+        print("Список туров:")
+        for tour in tours:
+            print(f"ID: {tour[0]}, Название: {tour[1]}, Место назначения: {tour[2]}, Продолжительность: {tour[3]} дней, Стоимость: {tour[4]}")
+    print()
+
+# Вызов функции main() для запуска программы
+if __name__ == '__main__':
+    main()
+
+# Закрытие соединения с СУБД PostgreSQL
+cur.close()
+conn.close()
